@@ -63,7 +63,6 @@ if __name__ == '__main__':
         if keywords:
             if pagenum <= 0:
                 pagenum = 1
-            else:
-                searchresult = spider_results(
-                    spidername, keywords, pagenum, sorttype)
-                print(searchresult)
+            searchresult = spider_results(
+                spidername, keywords, pagenum, sorttype)
+            print(searchresult)
