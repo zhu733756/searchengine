@@ -22,7 +22,7 @@ class Ss360ZZSpider(scrapy.Spider):
         pagenum = int(pagenum)
         super().__init__(*args, **kwargs)
         self.start_urls = [
-            'https://news.so.com/ns?q={}&pn={}&tn=newstitle&rank=rank&j=0&nso=11&tp=10&nc=0&src=page'.format(keywords, pagenum)]
+            'https://news.so.com/ns?q={}&pn={}&tn=news&rank=rank&j=0&nso=15&tp=26&nc=0&src=page'.format(keywords, pagenum)]
 
     def parsetime(self, time: str):
         if '前' in time:
@@ -75,14 +75,21 @@ class Ss360ZZSpider(scrapy.Spider):
                 # print('!!!no url')
                 continue
             # img
-            img = ''
+            img = item.xpath(
+                './/a[@class="group-img-link"]//img/@src').extract() or ''
+            if img:
+                img = img if isinstance(img, str) else img[0]
+                img = response.urljoin(img)
             # time
-            time = item.css('span.pdate::text').extract_first('')
+            time = item.xpath(
+                "//span[@class='sitename']/../span[last()]/text()").extract_first('')
             time = self.parsetime(time)
             # print('time:', time)
             # content
             author = item.css('span.stname::text').extract_first('')
-            content = ""
+            content = item.xpath(
+                './/div[@class="summary"]/text() | .//div[@class="summary"]/em/text()').extract()
+            content = "".join(content)
             # print(content)
             yield SearchengineItem(title=title, href=url, summary=content, author=author, picUrl=img, time=time)
 
@@ -92,5 +99,5 @@ if __name__ == "__main__":
     from scrapy.crawler import CrawlerProcess
     from scrapy.utils.project import get_project_settings
     process = CrawlerProcess(get_project_settings())
-    process.crawl(Ss360ZZSpider, keywords='张大奕', pagenum='1')
+    process.crawl(Ss360ZZSpider, keywords='刘德华', pagenum='1')
     process.start()
